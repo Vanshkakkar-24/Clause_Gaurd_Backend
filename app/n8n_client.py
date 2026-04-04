@@ -78,8 +78,7 @@ def generate_negotiation_email(
 
         "key_concerns": key_concerns,
 
-        "improvement_recommendations":
-        improvement_recommendations
+        "improvement_recommendations": improvement_recommendations
     }
 
 

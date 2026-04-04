@@ -135,7 +135,8 @@ def generate_email_endpoint(
  party_1: str,
  party_2: str,
  risky_clauses: list,
- key_concerns: list
+ key_concerns: list,
+ improvement_recommendations: list
 ):
 
 
@@ -147,8 +148,9 @@ def generate_email_endpoint(
 
         risky_clauses = risky_clauses,
 
-        key_concerns = key_concerns
-    )
+        key_concerns = key_concerns,
 
+        improvement_recommendations = improvement_recommendations
+    )
 
     return email

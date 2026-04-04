@@ -1,45 +1,122 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+
+
+# ---------- CONTRACT OVERVIEW ----------
+
+class ContractOverview(BaseModel):
+    contract_type: Optional[str] = ""
+    scope_summary: Optional[str] = ""
+
+    party_1: Optional[str] = ""
+    party_2: Optional[str] = ""
+
+    company_1: Optional[str] = ""
+    company_2: Optional[str] = ""
+
+    effective_date: Optional[str] = ""
+    end_date: Optional[str] = ""
+    duration: Optional[str] = ""
+
+    payment_amount: Optional[str] = ""
+    currency: Optional[str] = ""
+    payment_terms: Optional[str] = ""
+
+    notice_period: Optional[str] = ""
+    renewal_terms: Optional[str] = ""
+
+    jurisdiction: Optional[str] = ""
+    property_address: Optional[str] = ""
+
+
+# ---------- RISK BREAKDOWN ----------
+
+class RiskBreakdown(BaseModel):
+    financial_risk: int
+    legal_risk: int
+    flexibility_risk: int
+    ip_risk: int
+
+
+# ---------- RISKY CLAUSES ----------
 
 class RiskyClause(BaseModel):
     clause_title: str
     risk_level: str
     risk_score: int
+
+    clause_text_snippet: Optional[str] = ""
+
     explanation: str
+    why_it_matters: str
+
     suggestion: str
 
+    severity_reason: str
+
+
+# ---------- CONTRACT ANALYSIS RESPONSE ----------
 
 class ContractAnalysisResponse(BaseModel):
 
+    contract_overview: ContractOverview
+
     overall_risk_score: int
+    overall_risk_level: str
+
     summary: str
-    risk_level: str
+
+    risk_breakdown: RiskBreakdown
 
     risky_clauses: List[RiskyClause]
 
     key_concerns: List[str]
-    safe_clauses: List[str]
 
-    clauses: List[str]
+    positive_clauses: List[str]
+
+    missing_important_clauses: List[str]
+
+    improvement_recommendations: List[str]
+
+
+# ---------- CONTRACT COMPARISON ----------
+
+class RiskSummary(BaseModel):
+    contract1_level: str
+    contract2_level: str
+
+
+class MissingClauses(BaseModel):
+    contract1_missing: List[str]
+    contract2_missing: List[str]
 
 
 class Difference(BaseModel):
 
     topic: str
 
-    contract1: str
-    contract2: str
+    difference_type: str
 
-    risk_impact: str
+    contract1_position: str
+    contract2_position: str
 
-    recommendation: str
+    risk_change: str
 
+    risk_impact_level: str
+
+    why_it_matters: str
+
+    safer_option: str
+
+    suggestion: str
 
 
 class ContractComparisonResponse(BaseModel):
 
     contract1_risk_score: int
     contract2_risk_score: int
+
+    risk_summary: RiskSummary
 
     summary: str
 
@@ -51,6 +128,12 @@ class ContractComparisonResponse(BaseModel):
 
     unique_risks_contract2: List[str]
 
+    missing_important_clauses: MissingClauses
+
+    recommendation_summary: List[str]
+
+
+# ---------- NEGOTIATION EMAIL ----------
 
 class NegotiationEmail(BaseModel):
 
