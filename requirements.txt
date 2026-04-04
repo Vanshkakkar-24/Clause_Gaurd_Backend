@@ -7,3 +7,9 @@ python-docx
 pypdf
 nltk
 python-dotenv
+google-auth
+pymongo
+email-validator
+python-jose[cryptography]
+passlib==1.7.4
+bcrypt==4.0.1

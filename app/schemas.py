@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field, Field
 from typing import List, Optional
 
 
@@ -140,3 +140,18 @@ class NegotiationEmail(BaseModel):
     subject: str
 
     email_body: str
+
+class UserRegister(BaseModel):
+    full_name: str
+    phone: str
+    email: EmailStr
+    password: str = Field(min_length=6, max_length=72)
+    confirm_password: str
+
+class UserLogin(BaseModel):
+    email: EmailStr | None = None
+    phone: str | None = None
+    password: str
+
+class GoogleToken(BaseModel):
+    token: str

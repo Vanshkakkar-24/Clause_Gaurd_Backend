@@ -10,6 +10,7 @@ from app.n8n_client import send_comparison_to_n8n
 from app.schemas import ContractComparisonResponse
 from app.n8n_client import generate_negotiation_email
 from app.schemas import NegotiationEmail
+from app.user import router as auth_router
 
 UPLOAD_DIR = "uploads"
 
@@ -27,6 +28,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 
 
 @app.get("/")
