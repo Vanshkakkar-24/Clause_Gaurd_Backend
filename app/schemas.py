@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field, Field
 from typing import List, Optional
+from datetime import datetime
 
 
 # ---------- CONTRACT OVERVIEW ----------
@@ -141,13 +142,6 @@ class NegotiationEmail(BaseModel):
 
     email_body: str
 
-class UserRegister(BaseModel):
-    full_name: str
-    phone: str
-    email: EmailStr
-    password: str = Field(min_length=6, max_length=72)
-    confirm_password: str
-
 class UserLogin(BaseModel):
     email: EmailStr | None = None
     phone: str | None = None
@@ -174,3 +168,44 @@ class ContractSimplificationResponse(BaseModel):
     summary: str
 
     simplified_clauses: List[SimplifiedClause]
+
+class UserRegister(BaseModel):
+
+    account_type: str  # individual or organization
+
+    full_name: Optional[str] = None
+    organization_name: Optional[str] = None
+
+    phone: str
+    email: EmailStr
+
+    password: str = Field(min_length=6, max_length=72)
+    confirm_password: str
+
+
+class UserProfile(BaseModel):
+
+    id: str
+
+    account_type: str
+
+    full_name: Optional[str]
+    organization_name: Optional[str]
+
+    email: str
+
+class Activity(BaseModel):
+
+    user_email: str
+
+    type: str
+    # analyze
+    # compare
+    # simplify
+    # email
+
+    file_name: Optional[str]
+
+    result: dict
+
+    created_at: datetime

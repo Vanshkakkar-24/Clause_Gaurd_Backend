@@ -13,6 +13,11 @@ from app.schemas import NegotiationEmail
 from app.user import router as auth_router
 from app.n8n_client import send_simplification_to_n8n
 from app.schemas import ContractSimplificationResponse
+from app.database import activities_collection
+from datetime import datetime
+from app.auth import decode_token
+from fastapi import Depends
+from app.auth import oauth2_scheme, decode_token
 
 UPLOAD_DIR = "uploads"
 
@@ -53,7 +58,10 @@ def analyze_contract_text(contract_text: str):
 
 
 @app.post("/analyze/file", response_model=ContractAnalysisResponse)
-async def analyze_contract_file(file: UploadFile = File(...)):
+async def analyze_contract_file(
+    file: UploadFile = File(...),
+    token: str = Depends(oauth2_scheme)   # ✅ get token from header
+):
 
     extension = file.filename.split(".")[-1]
 
@@ -64,7 +72,6 @@ async def analyze_contract_file(file: UploadFile = File(...)):
         )
 
     file_id = str(uuid.uuid4())
-
     file_path = f"{UPLOAD_DIR}/{file_id}.{extension}"
 
     with open(file_path, "wb") as f:
@@ -77,6 +84,19 @@ async def analyze_contract_file(file: UploadFile = File(...)):
 
     n8n_response = send_to_n8n(text)
 
+    # decode JWT correctly
+    user_data = decode_token(token)
+
+    activities_collection.insert_one({
+
+        "user_email": user_data["email"],
+        "type": "analyze",
+        "file_name": file.filename,
+        "result": n8n_response,
+        "created_at": datetime.utcnow()
+
+    })
+
     return {
         **n8n_response,
         "clauses": clauses
@@ -88,8 +108,9 @@ response_model=ContractComparisonResponse)
 
 async def compare_contract_files(
 
- file1: UploadFile = File(...),
- file2: UploadFile = File(...)
+    file1: UploadFile = File(...),
+    file2: UploadFile = File(...),
+    token: str = Depends(oauth2_scheme)
 ):
 
 
@@ -126,6 +147,18 @@ async def compare_contract_files(
 
     result = send_comparison_to_n8n(text1, text2)
 
+    user_data = decode_token(token)
+
+    activities_collection.insert_one({
+
+        "user_email": user_data["email"],
+        "type": "comparison",
+        "file_name": f"{file1.filename} vs {file2.filename}",
+        "result": result,
+        "created_at": datetime.utcnow()
+
+    })
+
 
     return result
 
@@ -152,22 +185,43 @@ class NegotiationEmailRequest(BaseModel):
     response_model=NegotiationEmail
 )
 def generate_email_endpoint(
-    data: NegotiationEmailRequest
+
+    data: NegotiationEmailRequest,
+
+    token: str = Depends(oauth2_scheme)
+
 ):
 
     email = generate_negotiation_email(
 
         party_1=data.party_1,
-
         party_2=data.party_2,
-
         risky_clauses=data.risky_clauses,
-
         key_concerns=data.key_concerns,
-
         improvement_recommendations=data.improvement_recommendations
 
     )
+
+
+    # decode JWT correctly
+    user_data = decode_token(token)
+
+
+    # store activity
+    activities_collection.insert_one({
+
+        "user_email": user_data["email"],
+
+        "type": "negotiate",
+
+        "file_name": "Negotiation Email",
+
+        "result": email,
+
+        "created_at": datetime.utcnow()
+
+    })
+
 
     return email
 
@@ -179,13 +233,16 @@ def generate_email_endpoint(
 
 async def simplify_contract_file(
 
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+
+    token: str = Depends(oauth2_scheme)
 
 ):
 
     extension = file.filename.split(".")[-1]
 
     allowed = ["pdf","docx","txt"]
+
 
     if extension not in allowed:
 
@@ -210,6 +267,19 @@ async def simplify_contract_file(
     clauses = split_into_clauses(text)
 
     n8n_response = send_simplification_to_n8n(text)
+
+    # decode JWT correctly
+    user_data = decode_token(token)
+
+    activities_collection.insert_one({
+
+        "user_email": user_data["email"],
+        "type": "simplify",
+        "file_name": file.filename,
+        "result": n8n_response,
+        "created_at": datetime.utcnow()
+
+    })
 
     return {
 
