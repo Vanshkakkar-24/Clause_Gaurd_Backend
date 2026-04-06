@@ -128,32 +128,43 @@ async def compare_contract_files(
     return result
 
 
+from pydantic import BaseModel
+from typing import List
+
+
+class NegotiationEmailRequest(BaseModel):
+
+    party_1: str
+
+    party_2: str
+
+    risky_clauses: List[str]
+
+    key_concerns: List[str]
+
+    improvement_recommendations: List[str]
+
+
 @app.post(
-"/generate-email",
-
-response_model = NegotiationEmail
+    "/generate-email",
+    response_model=NegotiationEmail
 )
-
 def generate_email_endpoint(
- party_1: str,
- party_2: str,
- risky_clauses: list,
- key_concerns: list,
- improvement_recommendations: list
+    data: NegotiationEmailRequest
 ):
-
 
     email = generate_negotiation_email(
 
-        party_1 = party_1,
+        party_1=data.party_1,
 
-        party_2 = party_2,
+        party_2=data.party_2,
 
-        risky_clauses = risky_clauses,
+        risky_clauses=data.risky_clauses,
 
-        key_concerns = key_concerns,
+        key_concerns=data.key_concerns,
 
-        improvement_recommendations = improvement_recommendations
+        improvement_recommendations=data.improvement_recommendations
+
     )
 
     return email

@@ -55,7 +55,7 @@ def login(user: UserLogin):
 
 
 # 🔥 GOOGLE LOGIN
-@router.post("/auth/google")
+@router.post("/google")
 def google_login(data: GoogleToken):
 
     try:
