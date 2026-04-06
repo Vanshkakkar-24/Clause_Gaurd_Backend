@@ -51,7 +51,7 @@ class RiskyClause(BaseModel):
     explanation: str
     why_it_matters: str
 
-    suggestion: str
+    recommendation: str
 
     severity_reason: str
 

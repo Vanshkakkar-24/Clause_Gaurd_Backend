@@ -1,23 +1,26 @@
+import io
 import os
 import uuid
+import json
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.file_parser import extract_text
 from app.clause_splitter import split_into_clauses
-from app.n8n_client import send_to_n8n
+from app.n8n_client import send_to_n8n, send_simplification_to_n8n, generate_negotiation_email, send_redraft_to_n8n, send_comparison_to_n8n
 from app.schemas import ContractAnalysisResponse
 from app.n8n_client import send_comparison_to_n8n
 from app.schemas import ContractComparisonResponse
-from app.n8n_client import generate_negotiation_email
 from app.schemas import NegotiationEmail
 from app.user import router as auth_router
-from app.n8n_client import send_simplification_to_n8n
 from app.schemas import ContractSimplificationResponse
 from app.database import activities_collection
 from datetime import datetime
 from app.auth import decode_token
 from fastapi import Depends
 from app.auth import oauth2_scheme, decode_token
+import requests
+from fastapi import Response, Form
+from fastapi.responses import StreamingResponse
 
 UPLOAD_DIR = "uploads"
 
@@ -288,3 +291,97 @@ async def simplify_contract_file(
         "simplified_clauses": n8n_response.get("simplified_clauses", [])
 
     }
+
+@app.post("/redraft/file")
+async def redraft_contract_file(
+
+    file: UploadFile = File(...),
+
+    clauses: str = Form(...),
+
+    token: str = Depends(oauth2_scheme)
+
+):
+
+    extension = file.filename.split(".")[-1]
+
+    if extension not in ["pdf", "docx", "txt"]:
+
+        raise HTTPException(
+
+            status_code=400,
+
+            detail="Only pdf, docx, txt allowed"
+
+        )
+
+
+    # ---------- SAVE FILE ----------
+    file_id = str(uuid.uuid4())
+
+    file_path = f"{UPLOAD_DIR}/{file_id}.{extension}"
+
+
+    content = await file.read()
+
+    with open(file_path, "wb") as f:
+
+        f.write(content)
+
+
+    # ---------- EXTRACT FULL TEXT ----------
+    contract_text = extract_text(file_path)
+
+
+    # ---------- PARSE SELECTED CLAUSES ----------
+    parsed_clauses = json.loads(clauses)
+
+
+    # ---------- SEND TEXT TO N8N ----------
+    pdf_bytes = send_redraft_to_n8n(
+
+        contract_text = contract_text,
+
+        clauses = parsed_clauses
+
+    )
+
+
+    # ---------- STORE ACTIVITY ----------
+    user_data = decode_token(token)
+
+    activities_collection.insert_one({
+
+        "user_email": user_data["email"],
+
+        "type": "redraft",
+
+        "file_name": file.filename,
+
+        "result": {
+
+            "selected_clauses": parsed_clauses
+
+        },
+
+        "created_at": datetime.utcnow()
+
+    })
+
+
+    # ---------- RETURN PDF ----------
+    return StreamingResponse(
+
+        io.BytesIO(pdf_bytes),
+
+        media_type="application/pdf",
+
+        headers={
+
+            "Content-Disposition":
+
+            "attachment; filename=redrafted_contract.pdf"
+
+        }
+
+    )

@@ -2,6 +2,7 @@ import requests
 from app.config import N8N_WEBHOOK_URL
 from app.config import (N8N_EMAIL_WEBHOOK_URL)
 from app.config import N8N_SIMPLIFY_WEBHOOK_URL
+from fastapi import HTTPException
 
 def send_to_n8n(contract_text: str):
 
@@ -137,3 +138,37 @@ def send_simplification_to_n8n(contract_text: str):
     print(data)
 
     return data
+
+def send_redraft_to_n8n(contract_text, clauses):
+
+    url = "https://vanshkakkar.app.n8n.cloud/webhook/redraft-contract"
+
+    payload = {
+
+        "contract_text": contract_text,
+
+        "clauses": clauses
+
+    }
+
+    response = requests.post(
+
+        url,
+
+        json = payload,
+
+        timeout = 180
+
+    )
+
+    if response.status_code != 200:
+
+        raise HTTPException(
+
+            status_code = 500,
+
+            detail = "n8n redraft workflow failed"
+
+        )
+
+    return response.content

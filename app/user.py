@@ -73,7 +73,10 @@ def login(user: UserLogin):
 
     token = create_token({"email": db_user["email"]})
 
-    return {"access_token": token}
+    return {
+        "access_token": token,
+        "account_type": db_user["account_type"]
+    }
 
 
 # 🔥 GOOGLE LOGIN
