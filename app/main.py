@@ -11,6 +11,8 @@ from app.schemas import ContractComparisonResponse
 from app.n8n_client import generate_negotiation_email
 from app.schemas import NegotiationEmail
 from app.user import router as auth_router
+from app.n8n_client import send_simplification_to_n8n
+from app.schemas import ContractSimplificationResponse
 
 UPLOAD_DIR = "uploads"
 
@@ -168,3 +170,51 @@ def generate_email_endpoint(
     )
 
     return email
+
+
+@app.post(
+    "/simplify/file",
+    response_model = ContractSimplificationResponse
+)
+
+async def simplify_contract_file(
+
+    file: UploadFile = File(...)
+
+):
+
+    extension = file.filename.split(".")[-1]
+
+    allowed = ["pdf","docx","txt"]
+
+    if extension not in allowed:
+
+        raise HTTPException(
+
+            status_code = 400,
+
+            detail = "Only pdf, docx, txt supported"
+
+        )
+
+    file_id = str(uuid.uuid4())
+
+    file_path = f"{UPLOAD_DIR}/{file_id}.{extension}"
+
+    with open(file_path,"wb") as f:
+
+        f.write(await file.read())
+
+    text = extract_text(file_path)
+
+    clauses = split_into_clauses(text)
+
+    n8n_response = send_simplification_to_n8n(text)
+
+    return {
+
+        **n8n_response,
+
+        "simplified_clauses": n8n_response.get("simplified_clauses", [])
+
+    }

@@ -155,3 +155,22 @@ class UserLogin(BaseModel):
 
 class GoogleToken(BaseModel):
     token: str
+
+# ---------- SIMPLIFIED CLAUSES ----------
+
+class SimplifiedClause(BaseModel):
+
+    clause_title: str
+
+    original_clause: str
+
+    simplified_explanation: str
+
+
+class ContractSimplificationResponse(BaseModel):
+
+    contract_overview: ContractOverview
+
+    summary: str
+
+    simplified_clauses: List[SimplifiedClause]

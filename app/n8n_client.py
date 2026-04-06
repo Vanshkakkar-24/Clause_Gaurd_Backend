@@ -1,6 +1,7 @@
 import requests
 from app.config import N8N_WEBHOOK_URL
 from app.config import (N8N_EMAIL_WEBHOOK_URL)
+from app.config import N8N_SIMPLIFY_WEBHOOK_URL
 
 def send_to_n8n(contract_text: str):
 
@@ -102,5 +103,37 @@ def generate_negotiation_email(
     print("\nGenerated Email:")
     print(data)
 
+
+    return data
+
+
+def send_simplification_to_n8n(contract_text: str):
+
+    payload = {
+
+        "contract_text": contract_text,
+
+        "simplify": 1
+
+    }
+
+    print("\nSending contract for simplification...")
+
+    response = requests.post(
+
+        N8N_SIMPLIFY_WEBHOOK_URL,
+
+        json = payload,
+
+        timeout = 180
+
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    print("\nSimplified contract response:")
+    print(data)
 
     return data
