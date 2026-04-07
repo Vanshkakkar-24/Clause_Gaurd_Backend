@@ -51,7 +51,7 @@ class RiskyClause(BaseModel):
     explanation: str
     why_it_matters: str
 
-    recommendation: str
+    suggestion: str
 
     severity_reason: str
 
@@ -109,7 +109,7 @@ class Difference(BaseModel):
 
     safer_option: str
 
-    suggestion: str
+    suggestion: Optional[str] = ""
 
 
 class ContractComparisonResponse(BaseModel):

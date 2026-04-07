@@ -54,7 +54,7 @@ def register(user: UserRegister):
             "email": user.email
         }),
 
-        "token_type": "bearer"
+        "token_type": "bearer",
     }
 
 

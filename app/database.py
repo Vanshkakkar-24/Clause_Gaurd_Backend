@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-client = MongoClient("mongodb+srv://vanshkakkar241_db_user:HxyM0T6nxJOwtZuH@clausegaurd.eazlunt.mongodb.net/?appName=ClauseGaurd")
+client = MongoClient("mongodb://localhost:27017")
 
 db = client["auth_contract_ai"]
 

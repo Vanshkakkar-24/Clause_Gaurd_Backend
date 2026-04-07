@@ -187,6 +187,10 @@ class NegotiationEmailRequest(BaseModel):
     "/generate-email",
     response_model=NegotiationEmail
 )
+@app.post(
+    "/generate-email",
+    response_model=NegotiationEmail
+)
 def generate_email_endpoint(
 
     data: NegotiationEmailRequest,
@@ -195,36 +199,36 @@ def generate_email_endpoint(
 
 ):
 
+    # ---------- GENERATE EMAIL ----------
     email = generate_negotiation_email(
 
-        party_1=data.party_1,
-        party_2=data.party_2,
-        risky_clauses=data.risky_clauses,
-        key_concerns=data.key_concerns,
-        improvement_recommendations=data.improvement_recommendations
+        party_1 = data.party_1,
+        party_2 = data.party_2,
+
+        risky_clauses = data.risky_clauses,
+
+        key_concerns = data.key_concerns,
+
+        improvement_recommendations = data.improvement_recommendations
 
     )
 
-
-    # decode JWT correctly
+    # ---------- STORE ACTIVITY ----------
     user_data = decode_token(token)
 
-
-    # store activity
     activities_collection.insert_one({
 
         "user_email": user_data["email"],
 
-        "type": "negotiate",
+        "type": "email",
 
-        "file_name": "Negotiation Email",
+        "file_name": "negotiation_email",
 
         "result": email,
 
         "created_at": datetime.utcnow()
 
     })
-
 
     return email
 
